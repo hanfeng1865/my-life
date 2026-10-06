@@ -1,0 +1,113 @@
+.inspirations-workspace{max-width:1380px;margin:14px auto 64px;padding:0 18px}
+/* ── Inspiration Hero (purple creative theme) ── */
+.inspiration-hero{height:228px;overflow:hidden;border-radius:22px;background:linear-gradient(135deg,#f5efff 0%,#ede4ff 35%,#f8f0ff 65%,#fff3fc 100%);box-shadow:0 14px 32px #8b62d420,0 4px 12px #b07ae018;border:1.5px solid #e0cfff;position:relative}
+.inspiration-hero-bg{position:absolute;inset:0;pointer-events:none}
+.insp-shape{position:absolute;border-radius:50%}
+.insp-shape.s1{width:200px;height:200px;background:radial-gradient(circle,#c89eff22 0%,transparent 68%);top:-60px;left:-30px}
+.insp-shape.s2{width:140px;height:140px;background:radial-gradient(circle,#f06aee18 0%,transparent 68%);bottom:-30px;right:25%}
+.insp-shape.s3{width:100px;height:100px;background:radial-gradient(circle,#a87eff18 0%,transparent 68%);top:20px;left:48%}
+.insp-dot{position:absolute;border-radius:50%}
+.insp-dot.d1{width:7px;height:7px;background:#c89effaa;top:32px;left:36%;box-shadow:45px 70px 0 #f06aee88,120px 25px 0 #a87eff66,190px 60px 0 #c89eff44}
+.insp-dot.d2{width:5px;height:5px;background:#f06aee88;bottom:40px;left:22%;box-shadow:60px -20px 0 #a87eff55,140px 10px 0 #c89eff44}
+.insp-dot.d3{width:4px;height:4px;background:#a87eff66;top:60px;right:20%}
+.insp-dot.d4{width:3px;height:3px;background:#f06aee55;bottom:50px;right:15%}
+.inspiration-hero__copy{position:absolute;left:clamp(28px,4.5vw,62px);top:42px;color:#3d1c7a}
+.inspiration-hero__copy h1{margin:0;font-family:"Ma Shan Zheng","Noto Sans SC",sans-serif;font-size:clamp(28px,2.8vw,42px);line-height:1.28;font-weight:400;letter-spacing:.04em;text-shadow:0 2px 14px #ffffff99}
+.inspiration-hero__copy p,.inspiration-hero__copy .banner-sub{margin:12px 0 0;color:#6d3cb5;font-size:14px;font-weight:600}
+.inspiration-quote{position:absolute;top:27px;right:clamp(25px,5vw,72px);background:#fffefa;padding:18px 20px 14px;min-width:146px;border-radius:15px;color:#4d4d4d;font-size:14px;font-weight:800;line-height:1.55;box-shadow:0 8px 19px #8b62d420;border:1px solid #ede4ff}
+.inspiration-quote small{display:block;color:#8491a1;text-align:right;margin-top:8px;font-weight:600}
+
+/* Composer */
+.inspiration-composer{display:grid;grid-template-columns:78px minmax(0,1fr) 158px;align-items:center;gap:18px;margin-top:18px;padding:19px 20px;border-radius:20px;background:#fbfdff;box-shadow:0 12px 30px #637e9c18;border:1px solid #eff3f8}
+.inspiration-lightbulb{width:64px;height:64px;display:grid;place-items:center;color:#f3ac17;background:#fff7df;border-radius:50%;border:1px solid #ffe8ad}
+.inspiration-input{min-height:58px;display:flex;align-items:center;gap:12px;padding:0 12px 0 22px;border:1px solid #d8e9ff;border-radius:13px;background:#fff;box-shadow:inset 0 0 0 1px #f4f9ff}
+.inspiration-input>input{flex:1;min-width:0;border:0;outline:0;color:#25456f;font-size:17px;font-weight:600}
+.inspiration-input>input::placeholder{color:#a8bce0}
+.image-upload{display:flex;align-items:center;gap:7px;padding:9px 12px;color:#4a77ae;border:1px solid #d9e8fb;border-radius:10px;white-space:nowrap;cursor:pointer;font-size:14px;font-weight:800}
+.image-upload input{display:none}
+.inspiration-save{height:58px;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:13px;background:#278af0;color:#fff;font-weight:800;font-size:16px;box-shadow:0 9px 17px #278af04c}
+.inspiration-save:hover{background:#147bdd;transform:translateY(-1px)}
+
+/* Toolbar */
+.inspiration-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:24px 0 14px;flex-wrap:wrap}
+.inspiration-toolbar__left{display:flex;align-items:center;gap:14px}
+.inspiration-filter,.inspiration-stats{display:flex;align-items:center;gap:9px}
+.inspiration-filter button{padding:11px 20px;color:#6d83a6;background:#f4f8fd;border-radius:13px;font-size:14px;font-weight:800}
+.inspiration-filter button.active{color:#1682ed;background:#eaf5ff;box-shadow:inset 0 0 0 1px #cfe6ff}
+
+/* Sort dropdown */
+.inspiration-sort{display:flex;align-items:center;gap:4px;position:relative;padding:10px 14px;background:#fff;border:1px solid #e4ecf5;border-radius:12px;color:#5a7ba3;font-size:13px;font-weight:700;cursor:pointer}
+.inspiration-sort select{appearance:none;-webkit-appearance:none;border:0;outline:0;background:transparent;color:inherit;font:inherit;cursor:pointer;padding-right:4px}
+.inspiration-sort svg{color:#91afd0;pointer-events:none}
+
+/* Stats */
+.inspiration-stats{color:#7390b7;font-size:13px;font-weight:700}
+.inspiration-stats span{display:flex;align-items:center;gap:5px}
+.inspiration-stats svg{color:#1e8cf2}
+.inspiration-stats span:first-child svg{color:#f2ae16}
+
+/* Grid */
+.inspiration-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+
+/* Card */
+.inspiration-card{min-height:236px;display:flex;flex-direction:column;padding:18px 20px 17px;background:#fff;border:1px solid #eff3f7;border-radius:18px;box-shadow:0 9px 22px #5d789516;transition:box-shadow .2s,border-color .2s}
+.inspiration-card:hover{box-shadow:0 12px 32px #5d789524;border-color:#e2eaf4}
+.inspiration-card.is-pinned-card{border-color:#d4e6ff;background:#fafcff}
+.inspiration-card header{display:flex;align-items:center;gap:12px}
+.inspiration-kind{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:9px;color:#1782ed;background:#eaf5ff;font-weight:800;font-size:13px}
+.inspiration-kind.image{color:#7a4eea;background:#f1edff}
+.inspiration-card header small{color:#9bb2d4;font-size:13px;font-weight:600}
+.inspiration-card__actions{margin-left:auto;display:flex;gap:5px}
+.inspiration-card__actions button{padding:4px;color:#7c9bc5;background:transparent;border-radius:6px;transition:color .15s,background .15s}
+.inspiration-card__actions button:hover{color:#2b8cf0;background:#eef5ff}
+.inspiration-card__actions button.is-pinned{color:#2b8cf0}
+.inspiration-card__actions button.inspiration-delete:hover{color:#d95757;background:#fff0f0}
+
+/* Card image wrap */
+.inspiration-img-wrap{width:100%;height:92px;margin:13px 0 4px;border-radius:9px;overflow:hidden;display:flex;gap:4px}
+.inspiration-img-wrap img{flex:1;min-width:0;height:100%;object-fit:cover;object-position:center 54%;border-radius:6px}
+
+.inspiration-card h2{margin:24px 2px 18px;color:#143c76;font-size:20px;line-height:1.45}
+.inspiration-card.has-image h2{margin:8px 2px 13px}
+
+/* Pinned badge */
+.pinned-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;margin:0 2px 8px;background:#eef5ff;color:#3a8ee8;border-radius:7px;font-size:11px;font-weight:700;width:fit-content}
+
+/* Card footer */
+.inspiration-card footer{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:auto}
+.inspiration-card footer button{min-height:43px;display:flex;align-items:center;justify-content:center;gap:7px;color:#1e84eb;background:#fff;border:1px solid #dbeaff;border-radius:10px;font-size:14px;font-weight:800}
+.inspiration-card footer button:last-child{color:#6682a8}
+.inspiration-card footer button:hover{background:#f2f8ff}
+
+/* Empty state */
+.inspiration-empty{min-height:230px;grid-column:1/-1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;color:#91a8c4;background:#fff;border:1px dashed #c9dcef;border-radius:18px}
+.inspiration-empty svg{color:#f3b026}
+.inspiration-empty strong{color:#577495}
+
+/* Responsive */
+@media(max-width:900px){
+  .inspiration-toolbar{align-items:flex-start;flex-direction:column}
+  .inspiration-toolbar__left{flex-wrap:wrap}
+  .inspiration-stats{flex-wrap:wrap}
+  .inspiration-quote{display:none}
+}
+@media(max-width:680px){
+  .inspirations-workspace{margin-top:12px;padding:0 12px}
+  .inspiration-hero{height:250px}
+  .inspiration-hero>img{object-position:60% center}
+  .inspiration-hero__copy{top:34px;left:23px;max-width:72%}
+  .inspiration-hero__copy h1{font-size:33px}
+  .inspiration-hero__copy p{font-size:12px;line-height:1.6}
+  .inspiration-composer{grid-template-columns:1fr;gap:11px;padding:14px}
+  .inspiration-lightbulb{display:none}
+  .inspiration-input{padding-left:14px}
+  .image-upload{padding:7px 8px;font-size:12px}
+  .inspiration-save{height:48px}
+  .inspiration-filter{width:100%;overflow:auto}
+  .inspiration-filter button{white-space:nowrap;padding:10px 13px}
+  .inspiration-stats{font-size:11px}
+  .inspiration-grid{grid-template-columns:1fr}
+  .inspiration-card{min-height:220px}
+  .inspiration-card h2{font-size:18px}
+  .inspiration-sort{padding:8px 10px;font-size:12px}
+}

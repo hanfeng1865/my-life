@@ -1,0 +1,40 @@
+html:has(.desktop-widget), body:has(.desktop-widget) { background: transparent !important; min-width: 0 !important; margin: 0; overflow: hidden; }
+body:has(.desktop-widget) #root { height: 100vh; padding: 0; }
+.desktop-widget { box-sizing: border-box; height: 100vh; display: flex; flex-direction: column; background: #fbfdff; color: #253d50; border: 1px solid #d5e5f1; border-radius: 20px; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif; font-size: 13px; }
+.desktop-widget * { box-sizing: border-box; }
+.desktop-widget button { font: inherit; cursor: pointer; border: 0; background: transparent; color: inherit; -webkit-app-region: no-drag; }
+.desktop-widget button:disabled { opacity: .45; cursor: default; }
+.desktop-widget button:focus-visible, .desktop-widget input:focus-visible { outline: 2px solid #5287b3; outline-offset: 2px; }
+.widget-header { display: flex; align-items: center; gap: 9px; padding: 16px 14px 14px; background: linear-gradient(125deg, #e6f3ff, #d7e9f8); -webkit-app-region: drag; }
+.widget-heading { flex: 1; min-width: 0; text-align: center; display: flex; flex-direction: column; gap: 4px; }
+.widget-heading strong { font-size: 15px; letter-spacing: .5px; font-weight: 650; }
+.widget-heading > span { font-size: 10px; color: #63819a; }
+.widget-dismiss { width: 22px; height: 26px; font-size: 20px !important; color: #7695ac !important; }
+.widget-actions { display: flex; align-items: center; gap: 5px; }
+.widget-actions button { width: 26px; height: 26px; border-radius: 9px; font-size: 20px; }
+.widget-actions button:hover, .widget-actions .is-pinned { background: #bdd9ee; }
+.widget-actions .widget-plus { color: white; background: #345b7b; line-height: 22px; }
+.widget-actions .widget-plus:hover { background: #244764; }
+.widget-scroll { flex: 1; overflow-y: auto; padding: 8px 16px 16px; scrollbar-width: thin; scrollbar-color: #cbdae7 transparent; }
+.widget-task { display: flex; align-items: flex-start; gap: 10px; padding: 12px 0; border-bottom: 1px dashed #dce6ee; cursor: pointer; line-height: 1.55; }
+.widget-task input { appearance: none; width: 17px; height: 17px; margin: 2px 0 0; flex-shrink: 0; border: 1.5px solid #60809a; border-radius: 5px; display: grid; place-items: center; cursor: pointer; }
+.widget-task input:checked { background: #7592a6; border-color: #7592a6; }
+.widget-task input:checked::after { content: '✓'; color: white; font-size: 12px; line-height: 1; }
+.widget-task span { overflow-wrap: anywhere; }
+.widget-task.is-done span { color: #8c9ca9; text-decoration: line-through; }
+.widget-completed { margin-top: 13px; }
+.widget-completed-toggle { display: flex; align-items: center; gap: 6px; color: #7e93a5 !important; padding: 5px 0; font-size: 11px !important; }
+.widget-completed-toggle > span { width: 10px; }
+.widget-completed-toggle b { font-weight: 400; }
+.widget-empty { text-align: center; padding: 27px 5px; color: #7590a7; }
+.widget-empty > span { font-size: 28px; color: #9abbcf; }
+.widget-empty p { margin: 10px 0 6px; font-size: 13px; }
+.widget-empty small { font-size: 11px; color: #9aabb9; }
+.widget-add { display: flex; gap: 7px; padding: 12px 14px 4px; }
+.widget-add input { width: 0; flex: 1; min-width: 0; padding: 9px; border: 1px solid #d2e2ee; border-radius: 9px; background: white; color: #253d50; font: inherit; -webkit-app-region: no-drag; }
+.widget-add button { padding: 0 10px; background: #e4f0fa; border-radius: 9px; font-size: 12px; }
+.widget-footer { display: flex; justify-content: space-between; align-items: center; gap: 6px; padding: 12px 14px; border-top: 1px solid #e6edf3; background: #f0f6fb; font-size: 10px; color: #8ca1b1; }
+.widget-footer button { font-size: 10px; color: #5e809b; padding: 0; }
+.widget-error { font-size: 11px; color: #a35252; margin: 0; padding: 8px 14px; background: #fff0ef; }
+.desktop-widget-entry { border: 1px solid #c3dcec; border-radius: 10px; padding: 7px 10px; background: #eff7ff; color: #426b8b; cursor: pointer; font-size: 12px; order: 3; white-space: nowrap; }
+.topbar .desktop-widget-entry { justify-self: end; align-self: center; width: auto; }

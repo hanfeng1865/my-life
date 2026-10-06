@@ -1,0 +1,64 @@
+# 依赖与构建产物
+node_modules/
+my-day-prototype/dist/
+my-day-prototype/release/
+
+# macOS 应用包（构建产物，体积大）
+# 当前包与所有历史备份都不应进入版本控制，源码在 my-day-prototype/。
+我的人生.app/
+我的人生.app.backup-*/
+
+# 本地用户数据：绝不提交
+# 桌面版把真实数据写在系统用户数据目录，但以下模式用于兜底，
+# 防止调试时把数据、凭据或导出文件落到项目目录里。
+my-day-data*.json
+knowledge-config*.json
+*-data.json
+*.local.json
+
+# 本地音频素材（专注模式，通常有版权）
+# 保留目录说明文件，只忽略真正的音频内容。
+my-day-prototype/public/assets/audio/*
+!my-day-prototype/public/assets/audio/README.md
+my-day-prototype/node_modules/.cache/
+
+# 构建产物落错位置时的兜底：Vite 的 index-<hash>.js 不应出现在源码目录根
+my-day-prototype/index-*.js
+
+# 环境与凭据
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+credentials.json
+
+# 日志与临时文件
+*.log
+npm-debug.log*
+yarn-error.log*
+load-error.txt
+
+# 编辑器与系统
+.DS_Store
+**/.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+
+# 测试与工具缓存
+coverage/
+.nyc_output/
+*.tsbuildinfo
+.cache/
+
+# 本机工作资料与截图（可能包含个人内容）
+/.visual-editor/
+/flow-review/
+/*.xlsx
+my-day-prototype/product-poster/
+my-day-prototype/docs/*.png
+my-day-prototype/release-*/
+desktop-widget.json
