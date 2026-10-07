@@ -38,5 +38,6 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - Daily review history and detail views preserve user-entered line breaks, omit every unfilled section instead of showing placeholder copy, and allow any saved review to be edited.
 - The daily review writing panel lets the user choose a date, loads that day's saved review or a blank draft, and saves edits under the chosen date. Its “tomorrow” task action follows the chosen date.
 - Iteration pending decisions support inline editing and direct deletion from the decision list.
+- 每日复盘日期选择器整块浅蓝区域都可点击打开应用内日历，避免原生日期输入框的分段编辑和小图标造成误点；浮窗内点击不关闭，选择日期后关闭，保留未保存复盘的切换提醒。
 
 - 桌面待办采用 Electron 独立无边框小窗口，显示设备实际今天的任务，保留柔和蓝色；支持拖动、可选置顶、添加、勾选和折叠已完成事项，与主应用共用数据和项目完成状态。

@@ -3816,6 +3816,60 @@ function ReviewEditor({ review, onClose, onSave }) {
   );
 }
 
+function ReviewDatePicker({ value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const boxRef = useRef(null);
+  const triggerRef = useRef(null);
+  const close = () => {
+    setOpen(false);
+    triggerRef.current?.focus();
+  };
+  useEffect(() => {
+    if (!open) return undefined;
+    const outside = (event) => {
+      if (!boxRef.current?.contains(event.target)) setOpen(false);
+    };
+    const escape = (event) => {
+      if (event.key === "Escape") {
+        event.stopPropagation();
+        setOpen(false);
+        triggerRef.current?.focus();
+      }
+    };
+    window.addEventListener("pointerdown", outside);
+    window.addEventListener("keydown", escape);
+    return () => {
+      window.removeEventListener("pointerdown", outside);
+      window.removeEventListener("keydown", escape);
+    };
+  }, [open]);
+  const pick = (nextDate) => {
+    if (onChange(nextDate) !== false) close();
+  };
+  return (
+    <div className="review-date-picker" ref={boxRef} onBlur={(event) => {
+      if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
+    }}>
+      <button type="button" className="review-date-badge" ref={triggerRef}
+        aria-label="选择复盘日期" aria-expanded={open} aria-controls="review-date-calendar"
+        onClick={() => setOpen((current) => !current)}>
+        <CalendarBlank size={17} />
+        <span>{value.replaceAll("-", "/")}</span>
+        <span>周{week[parseLocalDate(value).getDay()]}</span>
+        <CaretDown size={14} />
+      </button>
+      {open && <div id="review-date-calendar" className="review-date-popover" role="group" aria-label="复盘日期日历">
+        <DateRangeCalendar startDate={value} endDate="" allowRange={false}
+          onChange={({ startDate }) => pick(startDate)} />
+        <div className="project-date-actions">
+          <button type="button" onClick={() => pick(dateKey(getLocalToday()))}>今天</button>
+          <button type="button" onClick={close}>关闭</button>
+        </div>
+      </div>}
+    </div>
+  );
+}
+
 function ReviewWorkspace({
   reviews,
   onSave,
@@ -3853,7 +3907,7 @@ function ReviewWorkspace({
     if (!nextDate || nextDate === selectedReviewDate) return;
     const currentDraft = { completed, blockers, insight, mood, tomorrow };
     if (JSON.stringify(currentDraft) !== JSON.stringify(savedDraft)
-      && !window.confirm("当前复盘有未保存的修改，确定切换日期吗？")) return;
+      && !window.confirm("当前复盘有未保存的修改，确定切换日期吗？")) return false;
     setSelectedReviewDate(nextDate);
     loadDraft(reviewDraftForDate(reviews, nextDate));
   };
@@ -3931,12 +3985,7 @@ function ReviewWorkspace({
               <PencilSimple size={22} weight="bold" /> {selectedReviewDate === todayKey ? "今天的复盘" : "当天的复盘"}
             </h2>
             <div className="review-date-controls">
-              <label className="review-date-badge">
-                <CalendarBlank size={17} />
-                <span className="sr-only">选择复盘日期</span>
-                <input type="date" value={selectedReviewDate} onChange={(event) => chooseDate(event.target.value)} aria-label="选择复盘日期" />
-                <span>周{week[date.getDay()]}</span>
-              </label>
+              <ReviewDatePicker value={selectedReviewDate} onChange={chooseDate} />
               {selectedReviewDate !== todayKey && <button type="button" className="review-back-today" onClick={() => chooseDate(todayKey)}>回到今天</button>}
             </div>
           </header>
