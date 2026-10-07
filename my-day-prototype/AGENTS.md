@@ -26,7 +26,7 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - A goal with 100% completion progress is treated as completed when it is created, edited, or loaded from saved data.
 - Each goal has a left-side completion checkbox that sets progress to 100% and status to completed. Completion feedback should feel exhilarating: a dimensional medal, expanding rings and a confetti burst; finishing all daily tasks and achieving a goal deserve a larger gold-trophy celebration. Respect reduced-motion preferences.
 - “我的项目” uses project tasks as the source of truth: project progress is automatically derived from completed-task count, never entered as a manual percentage. A project task added to today keeps a `projectId` and `projectTaskId`, and completion must synchronize in both directions.
-- Project details are a dedicated full-page workspace: include a project hero, quick task entry, separate pending/completed lists, and date chips. Project tasks support no date, today, tomorrow, a single date, or a start/end date range.
+- Project details are a dedicated full-page workspace: keep only the back/breadcrumb entry and 项目迭代, without the project hero or footer message; 项目随记 has its own page opened from the project card. Do not show an 全部项目待办 board or its task-entry and pending/completed lists; manage requirements within each iteration. Project task data and completion synchronization remain intact.
 - A project task that has been added to today must visibly read “已加入今天” and be disabled for that day, preventing duplicate additions.
 - “已加入今天” must stay on one line and never wrap mid-word.
 - Project task dates are chosen with a two-click calendar: first tap is the start, second tap is the end, and the range is auto-ordered. Native date inputs are not used for ranges.
@@ -41,3 +41,9 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - 每日复盘日期选择器整块浅蓝区域都可点击打开应用内日历，避免原生日期输入框的分段编辑和小图标造成误点；浮窗内点击不关闭，选择日期后关闭，保留未保存复盘的切换提醒。
 
 - 桌面待办采用 Electron 独立无边框小窗口，显示设备实际今天的任务，保留柔和蓝色；支持拖动、可选置顶、添加、勾选和折叠已完成事项，与主应用共用数据和项目完成状态。
+
+- 项目列表卡片不显示下一步、进度条/百分比/自动计算和待办预览；操作为“查看迭代”“项目随记”和小垃圾桶删除图标（不显示“删除项目”文字，保留删除确认）。“项目随记”打开该项目的独立随记页，随记从迭代列表页移出。
+
+- 项目状态选择器使用应用内圆角浮层：浅蓝选中背景、状态色圆点和勾选标记；不用原生 select 下拉菜单，支持点击外部、Esc 关闭及键盘选择。
+
+- 每个项目迭代有独立“BUG列表”标签，记录 BUG 描述和状态（待处理、已完成、无需处理）；支持新增、编辑、确认删除、直接切换状态和本地保存，数量来自该迭代实际 BUG 数据。

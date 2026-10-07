@@ -40,10 +40,13 @@ import {
 } from "@phosphor-icons/react";
 import { CompletionCelebration } from "./CompletionCelebration.jsx";
 import {
+  BUG_STATUSES,
+  addIterationBug,
   addIterationDecision,
   addProjectIteration,
   addProjectTaskToDay,
   addReviewPriorityToDay,
+  deleteIterationBug,
   deleteIterationDecision,
   getLocalToday,
   getSavedTaskMap,
@@ -64,12 +67,14 @@ import {
   syncDailyProjectTasks,
   syncProjectTaskDone,
   toggleProjectNotePinned,
+  updateIterationBug,
   updateIterationDecision,
   updateProjectNote,
   updateProjectStatus,
   upsertDailyReview,
 } from "./local-data.js";
 import { focusProgress, formatFocusTime } from "./focus-session.js";
+import { StatusSelect } from "./StatusSelect.jsx";
 import { KnowledgeWorkspace } from "./KnowledgeWorkspace.jsx";
 
 const week = ["日", "一", "二", "三", "四", "五", "六"];
@@ -1839,19 +1844,12 @@ function ProjectStatus({ status }) {
 
 function ProjectStatusControl({ project, onChange }) {
   return (
-    <label className={`project-status-control ${project.status}`}>
-      <span className="sr-only">项目状态</span>
-      <select
-        aria-label={`更改项目状态：${project.title}`}
-        value={project.status}
-        onChange={(event) => onChange(project.id, event.target.value)}
-      >
-        <option value="active">进行中</option>
-        <option value="paused">已搁置</option>
-        <option value="done">已完成</option>
-      </select>
-      <CaretDown size={13} weight="bold" />
-    </label>
+    <StatusSelect
+      value={project.status}
+      onChange={(status) => onChange(project.id, status)}
+      options={[["active", "进行中"], ["paused", "已搁置"], ["done", "已完成"]]}
+      label={`更改项目状态：${project.title}`}
+    />
   );
 }
 
@@ -3005,15 +3003,84 @@ function ProjectNotes({
   );
 }
 
+function IterationBugs({ bugs, onAdd, onUpdate, onDelete }) {
+  const [showForm, setShowForm] = useState(false);
+  const [draft, setDraft] = useState({ description: "", status: "pending" });
+  const [editingBug, setEditingBug] = useState(null);
+  const [editingDescription, setEditingDescription] = useState("");
+  const [deletingBug, setDeletingBug] = useState(null);
+
+  return (
+    <section className="iteration-tab-panel iteration-bugs">
+      <div className="iteration-panel-heading">
+        <div><h2>BUG列表 <b>{bugs.length}</b></h2></div>
+        <button type="button" aria-expanded={showForm} onClick={() => setShowForm((value) => !value)}>
+          <Plus size={18} /> 新建BUG
+        </button>
+      </div>
+      {showForm && (
+        <form className="iteration-bug-form" onSubmit={(event) => {
+          event.preventDefault();
+          if (!draft.description.trim()) return;
+          onAdd({ id: `bug-${Date.now()}`, description: draft.description.trim(), status: draft.status, createdAt: Date.now() });
+          setDraft({ description: "", status: "pending" });
+          setShowForm(false);
+        }}>
+          <label>BUG描述<textarea autoFocus rows="3" value={draft.description} onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))} placeholder="描述遇到的问题，例如：点击保存后没有响应" /></label>
+          <div className="iteration-bug-form__footer">
+            <div><span>BUG状态</span><StatusSelect value={draft.status} options={BUG_STATUSES} label="新建BUG状态" onChange={(status) => setDraft((current) => ({ ...current, status }))} /></div>
+            <div className="iteration-bug-form__actions">
+              <button type="button" onClick={() => setShowForm(false)}>取消</button>
+              <button type="submit" disabled={!draft.description.trim()}>添加BUG</button>
+            </div>
+          </div>
+        </form>
+      )}
+      <div className="iteration-bugs-table" role="table" aria-label="BUG列表">
+        <div className="iteration-bugs-row header" role="row">
+          <span role="columnheader">BUG描述</span><span role="columnheader">BUG状态</span><span role="columnheader">操作</span>
+        </div>
+        {bugs.map((bug) => (
+          <div className={`iteration-bugs-row ${bug.status}`} role="row" key={bug.id}>
+            <div className="iteration-bug-description" role="cell">
+              {editingBug === bug.id ? (
+                <form className="iteration-bug-editor" onSubmit={(event) => {
+                  event.preventDefault();
+                  if (!editingDescription.trim()) return;
+                  onUpdate(bug.id, { description: editingDescription.trim() });
+                  setEditingBug(null);
+                }}>
+                  <textarea autoFocus rows="3" aria-label="编辑BUG描述" value={editingDescription} onChange={(event) => setEditingDescription(event.target.value)} />
+                  <div className="iteration-bug-form__actions">
+                    <button type="button" onClick={() => setEditingBug(null)}>取消</button>
+                    <button type="submit" disabled={!editingDescription.trim()}>保存修改</button>
+                  </div>
+                </form>
+              ) : <span>{bug.description}</span>}
+            </div>
+            <div role="cell">
+              <StatusSelect value={bug.status} options={BUG_STATUSES} label={`更改BUG状态：${bug.description}`} onChange={(status) => onUpdate(bug.id, { status })} />
+            </div>
+            <div className="iteration-bug-actions" role="cell">
+              <button type="button" onClick={() => { setEditingBug(bug.id); setEditingDescription(bug.description); }}><PencilSimple size={16} /> 编辑</button>
+              <button type="button" className="iteration-bug-delete" aria-label={`删除BUG：${bug.description}`} title="删除BUG" onClick={() => setDeletingBug(bug)}><Trash size={17} /></button>
+            </div>
+          </div>
+        ))}
+        {!bugs.length && <p className="project-list-empty">还没有BUG，发现问题时可以在这里记录。</p>}
+      </div>
+      {deletingBug && <ConfirmDelete title={deletingBug.description} itemType="BUG" onCancel={() => setDeletingBug(null)} onConfirm={() => { onDelete(deletingBug.id); setDeletingBug(null); }} />}
+    </section>
+  );
+}
+
 function ProjectDetail({
   project,
   onClose,
   onToggleTask,
-  onAddToToday,
   onAddTask,
   onUpdateTask,
   onDeleteTask,
-  onUpdateStatus,
   onAddNote,
   onUpdateNote,
   onToggleNotePin,
@@ -3022,16 +3089,12 @@ function ProjectDetail({
   onAddDecision,
   onUpdateDecision,
   onDeleteDecision,
+  onAddBug,
+  onUpdateBug,
+  onDeleteBug,
 }) {
-  const [title, setTitle] = useState("");
-  const [note, setNote] = useState("");
-  const [schedule, setSchedule] = useState("none");
-  const [specificDate, setSpecificDate] = useState(dateKey(getLocalToday()));
-  const [rangeEnd, setRangeEnd] = useState(dateKey(getLocalToday()));
   const [editingTask, setEditingTask] = useState(null);
   const [editingCopy, setEditingCopy] = useState({ title: "", note: "" });
-  const [pendingOpen, setPendingOpen] = useState(true);
-  const [completedOpen, setCompletedOpen] = useState(true);
   const [notesOpen, setNotesOpen] = useState(true);
   const iterations = Array.isArray(project.iterations) ? project.iterations : [];
   const [iterationDetailId, setIterationDetailId] = useState(null);
@@ -3049,7 +3112,6 @@ function ProjectDetail({
     endDate: dateKey(shiftDate(getLocalToday(), 7)),
     goals: "",
   });
-  const progress = projectProgress(project);
   const selectedIteration = iterations.find((iteration) => iteration.id === iterationDetailId);
   const visibleTasks = selectedIteration ? projectIterationTasks(project, selectedIteration.id) : project.tasks;
   useEffect(() => {
@@ -3057,159 +3119,14 @@ function ProjectDetail({
       setIterationDetailId(null);
     }
   }, [iterations, iterationDetailId]);
-  const add = (event) => {
-    event.preventDefault();
-    if (!title.trim()) return;
-    const today = getLocalToday();
-    const startDate =
-      schedule === "today"
-        ? dateKey(today)
-        : schedule === "tomorrow"
-          ? dateKey(shiftDate(today, 1))
-          : schedule === "date" || schedule === "range"
-            ? specificDate
-            : "";
-    onAddTask(project.id, {
-      title: title.trim(),
-      note: note.trim(),
-      startDate,
-      endDate: schedule === "range" ? rangeEnd : "",
-      iterationId: selectedIteration?.id,
-    });
-    setTitle("");
-    setNote("");
-    setSchedule("none");
-  };
-  const renderRow = (task) => (
-    <article
-      className={`project-detail-row ${task.done ? "done" : ""}`}
-      key={task.id}
-    >
-      <label className="project-detail-check">
-        <input
-          type="checkbox"
-          checked={task.done}
-          onChange={() => onToggleTask(project, task)}
-        />
-        <span>
-          <Check size={15} weight="bold" />
-        </span>
-      </label>
-      <div className="project-detail-copy">
-        <strong>{task.title}</strong>
-        {task.note && <small>{task.note}</small>}
-      </div>
-      <DirectProjectDate
-        task={task}
-        onUpdate={(update) => onUpdateTask(project.id, task.id, update)}
-      />
-      {!task.done && (
-        <button
-          className="project-add-today"
-          disabled={task.addedToDateKeys?.includes(dateKey(getLocalToday()))}
-          onClick={() => onAddToToday(project, task)}
-        >
-          {task.addedToDateKeys?.includes(dateKey(getLocalToday())) ? (
-            <>
-              <Check size={17} weight="bold" /> 已加入今天
-            </>
-          ) : (
-            <>
-              <CalendarCheck size={17} /> 加入今天
-            </>
-          )}
-        </button>
-      )}
-      <button
-        className="project-row-edit"
-        type="button"
-        onClick={() => {
-          setEditingTask(editingTask === task.id ? null : task.id);
-          setEditingCopy({ title: task.title, note: task.note || "" });
-        }}
-      >
-        <PencilSimple size={17} /> 编辑
-      </button>
-      <button
-        className="project-task-delete"
-        aria-label={`删除${task.title}`}
-        onClick={() => onDeleteTask(project.id, task.id)}
-      >
-        <Trash size={17} /> 删除
-      </button>
-      {editingTask === task.id && (
-        <form
-          className="project-task-copy-editor"
-          onSubmit={(event) => {
-            event.preventDefault();
-            if (!editingCopy.title.trim()) return;
-            onUpdateTask(project.id, task.id, {
-              title: editingCopy.title.trim(),
-              note: editingCopy.note.trim(),
-            });
-            setEditingTask(null);
-          }}
-        >
-          <label>
-            待办标题
-            <input
-              value={editingCopy.title}
-              onChange={(event) =>
-                setEditingCopy((current) => ({
-                  ...current,
-                  title: event.target.value,
-                }))
-              }
-              autoFocus
-            />
-          </label>
-          <label>
-            备注（选填）
-            <textarea
-              rows="3"
-              value={editingCopy.note}
-              onChange={(event) =>
-                setEditingCopy((current) => ({
-                  ...current,
-                  note: event.target.value,
-                }))
-              }
-            />
-          </label>
-          <div>
-            <button type="submit">保存文案</button>
-            <button type="button" onClick={() => setEditingTask(null)}>
-              取消
-            </button>
-          </div>
-        </form>
-      )}
-    </article>
-  );
-  const pending = visibleTasks.filter((task) => !task.done),
-    completed = visibleTasks.filter((task) => task.done);
-  const sectionHeading = (kind, label, count, open, toggle) => (
-    <h3 className={`project-list-heading ${kind}`}>
-      <span>{kind === "complete" && <Check size={13} weight="bold" />}</span>{" "}
-      {label} <b>{count}</b>
-      <button
-        type="button"
-        className="project-section-toggle"
-        onClick={toggle}
-        aria-expanded={open}
-      >
-        {open ? "折叠" : "展开"}
-      </button>
-    </h3>
-  );
   if (selectedIteration) {
     return (
       <section className="project-detail-page project-iteration-detail-page">
         <button className="project-back" onClick={() => setIterationDetailId(null)}>
-          <ArrowLeft size={18} /> 返回项目详情 <span>/</span> {project.title}
+          <ArrowLeft size={18} /> 返回项目迭代 <span>/</span> {project.title}
         </button>
         <nav className="iteration-detail-tabs" aria-label="迭代详情分类">
-          {[["requirements", "需求列表", visibleTasks.length], ["decisions", "待确定项", selectedIteration.decisions?.length || 0], ["notes", "随记", (project.notes || []).filter((entry) => entry.iterationId === selectedIteration.id).length]].map(([value, label, count]) => (
+          {[["requirements", "需求列表", visibleTasks.length], ["decisions", "待确定项", selectedIteration.decisions?.length || 0], ["notes", "随记", (project.notes || []).filter((entry) => entry.iterationId === selectedIteration.id).length], ["bugs", "BUG列表", selectedIteration.bugs?.length || 0]].map(([value, label, count]) => (
             <button type="button" key={value} className={iterationTab === value ? "active" : ""} onClick={() => setIterationTab(value)}>{label}<b>{count}</b></button>
           ))}
         </nav>
@@ -3261,6 +3178,15 @@ function ProjectDetail({
             </div>
           </section>
         )}
+        {iterationTab === "bugs" && (
+          <IterationBugs
+            key={selectedIteration.id}
+            bugs={selectedIteration.bugs || []}
+            onAdd={(bug) => onAddBug(selectedIteration.id, bug)}
+            onUpdate={(bugId, update) => onUpdateBug(selectedIteration.id, bugId, update)}
+            onDelete={(bugId) => onDeleteBug(selectedIteration.id, bugId)}
+          />
+        )}
         {iterationTab === "notes" && (
           <ProjectNotes notes={(project.notes || []).filter((entry) => entry.iterationId === selectedIteration.id)} onAdd={(entry) => onAddNote({ ...entry, iterationId: selectedIteration.id })} onUpdate={onUpdateNote} onTogglePin={onToggleNotePin} onDelete={onDeleteNote} open={notesOpen} onToggleOpen={() => setNotesOpen((value) => !value)} title={`${selectedIteration.version} 迭代随记`} />
         )}
@@ -3272,28 +3198,6 @@ function ProjectDetail({
       <button className="project-back" onClick={onClose}>
         <ArrowLeft size={18} /> 我的项目 <span>/</span> {project.title}
       </button>
-      <header className="project-detail-hero">
-        <img src="assets/inspiration-hero-v1.png" alt="小助手正在专注项目" />
-        <div>
-          <span className="project-icon">
-            <GoalIcon type={project.icon} />
-          </span>
-          <h1>{project.title}</h1>
-          <ProjectStatusControl project={project} onChange={onUpdateStatus} />
-          <p>{project.description}</p>
-          <div>
-            <span>
-              <CalendarBlank size={18} /> 截止时间：{project.endDate}
-            </span>
-            <span>
-              <ListChecks size={18} /> 当前进度：{progress}%
-            </span>
-            <i>
-              <b style={{ width: `${progress}%` }} />
-            </i>
-          </div>
-        </div>
-      </header>
       <section className="project-iterations" aria-label="项目迭代">
         <div className="project-iterations__head">
           <div>
@@ -3359,112 +3263,34 @@ function ProjectDetail({
           {!iterations.length && <p className="project-list-empty">还没有迭代，先创建第一个吧。</p>}
         </div>
       </section>
-      <section className="project-detail-board">
-        <h2>
-          <span>
-            <Check size={20} weight="bold" />
-          </span>{" "}
-          {selectedIteration ? `${selectedIteration.version} 需求与待办` : "全部项目待办"} <b>{visibleTasks.length}</b>
-        </h2>
-        <form className="project-quick-add" onSubmit={add}>
-          <label>
-            待办标题
-            <input
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              placeholder="例如：完成联系人模块"
-            />
-          </label>
-          <label>
-            备注（选填）
-            <input
-              value={note}
-              onChange={(event) => setNote(event.target.value)}
-              placeholder="简单写下说明…"
-            />
-          </label>
-          <div className="project-schedule-picker">
-            <span>安排到哪一天（非必填）</span>
-            {[
-              ["today", "☀️ 今天"],
-              ["tomorrow", "🌙 明天"],
-              ["date", "单日"],
-              ["range", "日期范围"],
-            ].map(([value, label]) => (
-              <button
-                type="button"
-                key={value}
-                className={schedule === value ? "selected" : ""}
-                onClick={() => setSchedule(value)}
-              >
-                {label}
-              </button>
-            ))}
-            {(schedule === "date" || schedule === "range") && (
-              <input
-                aria-label="待办开始日期"
-                type="date"
-                value={specificDate}
-                onChange={(event) => setSpecificDate(event.target.value)}
-              />
-            )}
-            {schedule === "range" && (
-              <>
-                <span>至</span>
-                <input
-                  aria-label="待办结束日期"
-                  type="date"
-                  value={rangeEnd}
-                  min={specificDate}
-                  onChange={(event) => setRangeEnd(event.target.value)}
-                />
-              </>
-            )}
-          </div>
-          <button className="project-add-submit" type="submit">
-            <Plus size={22} /> 添加待办
-          </button>
-        </form>
-        {sectionHeading(
-          "pending",
-          "进行中待办",
-          pending.length,
-          pendingOpen,
-          () => setPendingOpen((value) => !value),
-        )}
-        {pendingOpen && (
-          <div className="project-detail-list">
-            {pending.length ? (
-              pending.map(renderRow)
-            ) : (
-              <p className="project-list-empty">所有待办都完成啦！</p>
-            )}
-          </div>
-        )}
-        {sectionHeading(
-          "complete",
-          "已完成",
-          completed.length,
-          completedOpen,
-          () => setCompletedOpen((value) => !value),
-        )}
-        {completedOpen && (
-          <div className="project-detail-list">{completed.map(renderRow)}</div>
-        )}
-      </section>
+    </section>
+  );
+}
+
+function ProjectNotesPage({
+  project,
+  onClose,
+  onAddNote,
+  onUpdateNote,
+  onToggleNotePin,
+  onDeleteNote,
+}) {
+  const [notesOpen, setNotesOpen] = useState(true);
+  return (
+    <section className="project-detail-page project-notes-page">
+      <button className="project-back" onClick={onClose}>
+        <ArrowLeft size={18} /> 我的项目 <span>/</span> {project.title}
+      </button>
       <ProjectNotes
-        notes={selectedIteration ? (project.notes || []).filter((entry) => entry.iterationId === selectedIteration.id) : project.notes}
-        onAdd={(entry) => onAddNote({ ...entry, iterationId: selectedIteration?.id })}
+        notes={project.notes}
+        onAdd={onAddNote}
         onUpdate={onUpdateNote}
         onTogglePin={onToggleNotePin}
         onDelete={onDeleteNote}
         open={notesOpen}
         onToggleOpen={() => setNotesOpen((value) => !value)}
-        title={selectedIteration ? `${selectedIteration.version} 迭代随记` : "项目随记"}
+        title="项目随记"
       />
-      <footer className="project-footer">
-        🌱 把想法变成行动，把行动变成更好的自己。
-      </footer>
     </section>
   );
 }
@@ -3473,7 +3299,6 @@ function Projects({
   projects,
   onCreate,
   onToggleTask,
-  onAddToToday,
   onAddTask,
   onUpdateTask,
   onDeleteTask,
@@ -3487,6 +3312,9 @@ function Projects({
   onAddDecision,
   onUpdateDecision,
   onDeleteDecision,
+  onAddBug,
+  onUpdateBug,
+  onDeleteBug,
   bannerCopy,
   onBannerSave,
 }) {
@@ -3497,13 +3325,24 @@ function Projects({
   const visible = projects.filter(
     (project) => filter === "all" || project.status === filter,
   );
+  if (detail?.view === "notes")
+    return (
+      <ProjectNotesPage
+        key={detail.id}
+        project={projects.find((project) => project.id === detail.id) || detail}
+        onClose={() => setDetail(null)}
+        onAddNote={(note) => onAddNote(detail.id, note)}
+        onUpdateNote={(noteId, update) => onUpdateNote(detail.id, noteId, update)}
+        onToggleNotePin={(noteId) => onToggleNotePin(detail.id, noteId)}
+        onDeleteNote={(noteId) => onDeleteNote(detail.id, noteId)}
+      />
+    );
   if (detail)
     return (
       <ProjectDetail
         project={projects.find((project) => project.id === detail.id) || detail}
         onClose={() => setDetail(null)}
         onToggleTask={onToggleTask}
-        onAddToToday={onAddToToday}
         onAddTask={onAddTask}
         onUpdateTask={onUpdateTask}
         onDeleteTask={onDeleteTask}
@@ -3518,6 +3357,9 @@ function Projects({
         onAddDecision={(iterationId, decision) => onAddDecision(detail.id, iterationId, decision)}
         onUpdateDecision={(iterationId, decisionId, update) => onUpdateDecision(detail.id, iterationId, decisionId, update)}
         onDeleteDecision={(iterationId, decisionId) => onDeleteDecision(detail.id, iterationId, decisionId)}
+        onAddBug={(iterationId, bug) => onAddBug(detail.id, iterationId, bug)}
+        onUpdateBug={(iterationId, bugId, update) => onUpdateBug(detail.id, iterationId, bugId, update)}
+        onDeleteBug={(iterationId, bugId) => onDeleteBug(detail.id, iterationId, bugId)}
       />
     );
   return (
@@ -3577,7 +3419,6 @@ function Projects({
       <div className="project-list">
         {visible.length ? (
           visible.map((project) => {
-            const progress = projectProgress(project);
             return (
               <article className="project-card" key={project.id}>
                 <div className="project-card__identity">
@@ -3594,52 +3435,27 @@ function Projects({
                     </h2>
                     <p>{project.description}</p>
                     <small>
-                      <CalendarBlank size={15} /> 截止 {project.endDate}　{" "}
-                      <Flag size={15} /> 下一步：
-                      {project.nextStep || "写下下一步"}
+                      <CalendarBlank size={15} /> 截止 {project.endDate}
                     </small>
                   </div>
                 </div>
-                <div className="project-card__progress">
-                  <div>
-                    <i style={{ width: `${progress}%` }} />
-                  </div>
-                  <b>{progress}%</b>
-                  <small>自动计算</small>
-                </div>
-                <div className="project-card__tasks">
-                  {project.tasks.slice(0, 4).map((task) => (
-                    <button
-                      key={task.id}
-                      className={task.done ? "done" : ""}
-                      onClick={() => onToggleTask(project, task)}
-                    >
-                      <span>
-                        {task.done ? <Check size={13} weight="bold" /> : null}
-                      </span>
-                      {task.title}
-                    </button>
-                  ))}
-                </div>
                 <div className="project-card__actions">
-                  <button onClick={() => setDetail(project)}>
-                    <FolderOpen size={18} /> 查看详情
+                  <button onClick={() => setDetail({ ...project, view: "iterations" })}>
+                    <FolderOpen size={18} /> 查看迭代
                   </button>
                   <button
                     className="primary"
-                    onClick={() => {
-                      const next = project.tasks.find((task) => !task.done);
-                      if (next) onAddToToday(project, next);
-                    }}
+                    onClick={() => setDetail({ ...project, view: "notes" })}
                   >
-                    <CalendarCheck size={18} /> 加入今天
+                    <PencilSimple size={18} /> 项目随记
                   </button>
                   <button
                     className="project-delete-btn"
                     aria-label={`删除项目${project.title}`}
+                    title="删除项目"
                     onClick={() => setDeletingProject(project)}
                   >
-                    <Trash size={17} /> 删除项目
+                    <Trash size={17} />
                   </button>
                 </div>
               </article>
@@ -4743,6 +4559,12 @@ export function App() {
     setProjects((current) => updateIterationDecision(current, projectId, iterationId, decisionId, update));
   const removeIterationDecision = (projectId, iterationId, decisionId) =>
     setProjects((current) => deleteIterationDecision(current, projectId, iterationId, decisionId));
+  const createIterationBug = (projectId, iterationId, bug) =>
+    setProjects((current) => addIterationBug(current, projectId, iterationId, bug));
+  const editIterationBug = (projectId, iterationId, bugId, update) =>
+    setProjects((current) => updateIterationBug(current, projectId, iterationId, bugId, update));
+  const removeIterationBug = (projectId, iterationId, bugId) =>
+    setProjects((current) => deleteIterationBug(current, projectId, iterationId, bugId));
   const toggleProjectTask = (project, task) => {
     const done = !task.done;
     setProjects((current) =>
@@ -5039,6 +4861,9 @@ export function App() {
           onAddDecision={createIterationDecision}
           onUpdateDecision={editIterationDecision}
           onDeleteDecision={removeIterationDecision}
+          onAddBug={createIterationBug}
+          onUpdateBug={editIterationBug}
+          onDeleteBug={removeIterationBug}
           bannerCopy={projectsBanner}
           onBannerSave={(patch) =>
             setProjectsBanner((cur) => ({ ...cur, ...patch }))

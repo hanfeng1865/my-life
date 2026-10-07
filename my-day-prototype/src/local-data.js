@@ -93,6 +93,49 @@ export function deleteIterationDecision(projects, projectId, iterationId, decisi
   });
 }
 
+export const BUG_STATUSES = [["pending", "待处理"], ["done", "已完成"], ["ignored", "无需处理"]];
+
+function normalizeIterationBug(bug) {
+  if (!bug || typeof bug.description !== "string" || !bug.description.trim()) return null;
+  return {
+    ...bug,
+    description: bug.description.trim(),
+    status: BUG_STATUSES.some(([value]) => value === bug.status) ? bug.status : "pending",
+  };
+}
+
+export function addIterationBug(projects, projectId, iterationId, bug) {
+  const entry = normalizeIterationBug(bug);
+  if (!entry) return projects;
+  return projects.map((project) => project.id !== projectId ? project : {
+    ...project,
+    iterations: (project.iterations || []).map((iteration) => iteration.id !== iterationId ? iteration : {
+      ...iteration,
+      bugs: [...(iteration.bugs || []), entry],
+    }),
+  });
+}
+
+export function updateIterationBug(projects, projectId, iterationId, bugId, update) {
+  return projects.map((project) => project.id !== projectId ? project : {
+    ...project,
+    iterations: (project.iterations || []).map((iteration) => iteration.id !== iterationId ? iteration : {
+      ...iteration,
+      bugs: (iteration.bugs || []).map((bug) => bug.id !== bugId ? bug : normalizeIterationBug({ ...bug, ...update }) || bug),
+    }),
+  });
+}
+
+export function deleteIterationBug(projects, projectId, iterationId, bugId) {
+  return projects.map((project) => project.id !== projectId ? project : {
+    ...project,
+    iterations: (project.iterations || []).map((iteration) => iteration.id !== iterationId ? iteration : {
+      ...iteration,
+      bugs: (iteration.bugs || []).filter((bug) => bug.id !== bugId),
+    }),
+  });
+}
+
 export function projectNotesForDisplay(notes) {
   return (Array.isArray(notes) ? notes : []).slice().sort((left, right) => (
     Number(Boolean(right.pinned)) - Number(Boolean(left.pinned))
@@ -268,6 +311,7 @@ export function normalizeData(value) {
       iterations: Array.isArray(project?.iterations) ? project.iterations.filter(Boolean).map((iteration) => ({
         ...iteration,
         goals: Array.isArray(iteration.goals) ? iteration.goals.filter((goal) => typeof goal === "string" && goal.trim()) : [],
+        bugs: Array.isArray(iteration.bugs) ? iteration.bugs.map(normalizeIterationBug).filter(Boolean) : [],
         decisions: Array.isArray(iteration.decisions) ? iteration.decisions.filter((decision) => decision && typeof decision.content === "string") : [],
         status: ["planned", "active", "done"].includes(iteration.status) ? iteration.status : "planned",
       })) : [],

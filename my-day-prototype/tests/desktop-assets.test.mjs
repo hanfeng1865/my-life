@@ -125,12 +125,12 @@ test("shows project creation and direct status controls", async () => {
   const styleSource = await readFile(new URL("../src/projects.css", import.meta.url), "utf8");
 
   assert.match(appSource, /aria-label="新建项目"/);
-  assert.match(appSource, /aria-label={`更改项目状态：\$\{project\.title\}`}/);
+  assert.match(appSource, /label={`更改项目状态：\$\{project\.title\}`}/);
   assert.match(appSource, /onUpdateStatus/);
   assert.doesNotMatch(styleSource, /\.project-stats-row\s*\{\s*display\s*:\s*none/);
 });
 
-test("lets project task and note sections collapse independently", async () => {
+test("lets the project note section collapse", async () => {
   const source = await readFile(new URL("../src/App.jsx", import.meta.url), "utf8");
 
   assert.match(source, /项目随记/);
@@ -157,7 +157,7 @@ test("opens an iteration in a dedicated detail page", async () => {
 
   assert.match(appSource, /setIterationDetailId\(iteration\.id\)/);
   assert.match(appSource, /project-iteration-detail-page/);
-  assert.match(appSource, /返回项目详情/);
+  assert.match(appSource, /返回项目迭代/);
   assert.doesNotMatch(appSource, /className="project-iteration-detail-hero"/);
 });
 
@@ -192,11 +192,12 @@ test("uses a simplified requirement list with descriptions", async () => {
   assert.doesNotMatch(appSource, /<span>类型<\/span>/);
 });
 
-test("uses the project task edit action for task copy instead of dates", async () => {
+test("uses the iteration requirement edit action for requirement copy", async () => {
   const source = await readFile(new URL("../src/App.jsx", import.meta.url), "utf8");
 
   assert.match(source, /project-task-copy-editor/);
-  assert.match(source, /保存文案/);
+  assert.match(source, /需求名称/);
+  assert.match(source, /需求说明/);
   assert.doesNotMatch(source, /editingTask === task\.id && <div className="project-schedule-popover"/);
 });
 
