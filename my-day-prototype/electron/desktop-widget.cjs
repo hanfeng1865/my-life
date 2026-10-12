@@ -4,6 +4,8 @@ const fs = require('node:fs');
 
 function installDesktopWidget({ app, getMainWindow, showMainWindow, readData }) {
   let widget;
+  let dismissing = false;
+  let dismissTimer;
   const statePath = path.join(app.getPath('userData'), 'desktop-widget.json');
   let state = {};
   try { state = JSON.parse(fs.readFileSync(statePath, 'utf8')); } catch {}
@@ -31,6 +33,8 @@ function installDesktopWidget({ app, getMainWindow, showMainWindow, readData }) 
     widget = new BrowserWindow({
       width, height, minWidth: 300, minHeight: 280, x, y,
       title: '我的一天 · 桌面待办', frame: false, transparent: true,
+      // A non-activating macOS panel must not bring the main app forward on dismissal.
+      ...(process.platform === 'darwin' ? { type: 'panel' } : {}),
       backgroundColor: '#00000000', hasShadow: true, resizable: true,
       webPreferences: { preload: path.join(__dirname, 'preload.cjs'), contextIsolation: true, nodeIntegration: false, backgroundThrottling: false },
     });
@@ -43,7 +47,14 @@ function installDesktopWidget({ app, getMainWindow, showMainWindow, readData }) 
     widget.on('closed', () => { widget = null; });
   }
   ipcMain.handle('widget:show', showWidget);
-  ipcMain.handle('widget:hide', () => widget?.hide());
+  ipcMain.handle('widget:hide', () => {
+    if (!widget || widget.isDestroyed()) return;
+    // macOS may deliver activation after the last visible window is hidden.
+    dismissing = true;
+    clearTimeout(dismissTimer);
+    dismissTimer = setTimeout(() => { dismissing = false; }, 500);
+    widget.hide();
+  });
   ipcMain.handle('widget:open-main', () => showMainWindow(true));
   ipcMain.handle('widget:pin', (_event, pinned) => { widget?.setAlwaysOnTop(Boolean(pinned)); rememberWindow(); return Boolean(pinned); });
   ipcMain.handle('widget:read', async () => {
@@ -76,6 +87,6 @@ function installDesktopWidget({ app, getMainWindow, showMainWindow, readData }) 
     { label: '我的人生', submenu: [{ role: 'about' }, { type: 'separator' }, { label: '显示我的一天桌面待办', click: showWidget }, { label: '打开主窗口', click: () => showMainWindow(true) }, { type: 'separator' }, { role: 'hide' }, { role: 'hideOthers' }, { role: 'unhide' }, { type: 'separator' }, { role: 'quit' }] },
     { role: 'editMenu' }, { role: 'viewMenu' }, { role: 'windowMenu' },
   ]));
-  return { showWidget, broadcast };
+  return { showWidget, broadcast, isDismissing: () => dismissing };
 }
 module.exports = { installDesktopWidget };

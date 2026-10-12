@@ -38,6 +38,7 @@ import {
   X,
   YoutubeLogo,
 } from "@phosphor-icons/react";
+import ImageAttachments from "./ImageAttachments.jsx";
 import { CompletionCelebration } from "./CompletionCelebration.jsx";
 import {
   BUG_STATUSES,
@@ -1279,18 +1280,6 @@ function Goals({
   const matches = (goal) => status === "all" || goal.status === status;
   return (
     <section className="goals-workspace">
-      <div className="goal-hero">
-        <img
-          className="module-banner-art"
-          src="assets/banner-goals-v3.png"
-          alt=""
-        />
-        <div className="module-banner-copy">
-          <span>我的目标</span>
-          <h1>每一个小目标，都在让你成为更好的自己</h1>
-          <p>专注重要的事，少一点焦虑，多一点行动。</p>
-        </div>
-      </div>
       <div className="goal-toolbar">
         <div className="goal-tabs">
           {goalGroups.map((item) => (
@@ -1628,19 +1617,6 @@ function Inspirations({
 
   return (
     <section className="inspirations-workspace">
-      <div className="inspiration-hero">
-        <img
-          className="module-banner-art"
-          src="assets/banner-inspirations-v3.png"
-          alt=""
-        />
-        <div className="module-banner-copy">
-          <span>我的灵感</span>
-          <h1>每一个小瞬间，都可能成为奇妙的灵感</h1>
-          <p>先把它记下来，再慢慢让它发光。</p>
-        </div>
-      </div>
-
       <div className="inspiration-composer">
         <div className="inspiration-lightbulb">
           <Lightbulb size={31} weight="fill" />
@@ -3005,9 +2981,10 @@ function ProjectNotes({
 
 function IterationBugs({ bugs, onAdd, onUpdate, onDelete }) {
   const [showForm, setShowForm] = useState(false);
-  const [draft, setDraft] = useState({ description: "", status: "pending" });
+  const [draft, setDraft] = useState({ description: "", status: "pending", images: [] });
   const [editingBug, setEditingBug] = useState(null);
   const [editingDescription, setEditingDescription] = useState("");
+  const [editingImages, setEditingImages] = useState([]);
   const [deletingBug, setDeletingBug] = useState(null);
 
   return (
@@ -3022,11 +2999,12 @@ function IterationBugs({ bugs, onAdd, onUpdate, onDelete }) {
         <form className="iteration-bug-form" onSubmit={(event) => {
           event.preventDefault();
           if (!draft.description.trim()) return;
-          onAdd({ id: `bug-${Date.now()}`, description: draft.description.trim(), status: draft.status, createdAt: Date.now() });
-          setDraft({ description: "", status: "pending" });
+          onAdd({ id: `bug-${Date.now()}`, images: draft.images, description: draft.description.trim(), status: draft.status, createdAt: Date.now() });
+          setDraft({ description: "", status: "pending", images: [] });
           setShowForm(false);
         }}>
           <label>BUG描述<textarea autoFocus rows="3" value={draft.description} onChange={(event) => setDraft((current) => ({ ...current, description: event.target.value }))} placeholder="描述遇到的问题，例如：点击保存后没有响应" /></label>
+          <ImageAttachments images={draft.images} onChange={(update) => setDraft((current) => ({ ...current, images: update(current.images) }))} />
           <div className="iteration-bug-form__footer">
             <div><span>BUG状态</span><StatusSelect value={draft.status} options={BUG_STATUSES} label="新建BUG状态" onChange={(status) => setDraft((current) => ({ ...current, status }))} /></div>
             <div className="iteration-bug-form__actions">
@@ -3047,22 +3025,23 @@ function IterationBugs({ bugs, onAdd, onUpdate, onDelete }) {
                 <form className="iteration-bug-editor" onSubmit={(event) => {
                   event.preventDefault();
                   if (!editingDescription.trim()) return;
-                  onUpdate(bug.id, { description: editingDescription.trim() });
+                  onUpdate(bug.id, { description: editingDescription.trim(), images: editingImages });
                   setEditingBug(null);
                 }}>
                   <textarea autoFocus rows="3" aria-label="编辑BUG描述" value={editingDescription} onChange={(event) => setEditingDescription(event.target.value)} />
+                  <ImageAttachments images={editingImages} onChange={setEditingImages} />
                   <div className="iteration-bug-form__actions">
                     <button type="button" onClick={() => setEditingBug(null)}>取消</button>
                     <button type="submit" disabled={!editingDescription.trim()}>保存修改</button>
                   </div>
                 </form>
-              ) : <span>{bug.description}</span>}
+              ) : <><span>{bug.description}</span><ImageAttachments images={bug.images} /></>}
             </div>
             <div role="cell">
               <StatusSelect value={bug.status} options={BUG_STATUSES} label={`更改BUG状态：${bug.description}`} onChange={(status) => onUpdate(bug.id, { status })} />
             </div>
             <div className="iteration-bug-actions" role="cell">
-              <button type="button" onClick={() => { setEditingBug(bug.id); setEditingDescription(bug.description); }}><PencilSimple size={16} /> 编辑</button>
+              <button type="button" onClick={() => { setEditingBug(bug.id); setEditingDescription(bug.description); setEditingImages(bug.images || []); }}><PencilSimple size={16} /> 编辑</button>
               <button type="button" className="iteration-bug-delete" aria-label={`删除BUG：${bug.description}`} title="删除BUG" onClick={() => setDeletingBug(bug)}><Trash size={17} /></button>
             </div>
           </div>
@@ -3094,14 +3073,16 @@ function ProjectDetail({
   onDeleteBug,
 }) {
   const [editingTask, setEditingTask] = useState(null);
-  const [editingCopy, setEditingCopy] = useState({ title: "", note: "" });
+  const [editingCopy, setEditingCopy] = useState({ title: "", note: "", images: [] });
   const [notesOpen, setNotesOpen] = useState(true);
   const iterations = Array.isArray(project.iterations) ? project.iterations : [];
   const [iterationDetailId, setIterationDetailId] = useState(null);
   const [iterationTab, setIterationTab] = useState("requirements");
   const [showRequirementForm, setShowRequirementForm] = useState(false);
-  const [requirementDraft, setRequirementDraft] = useState({ title: "", description: "", priority: "P1", workflowStatus: "pending" });
+  const [requirementDraft, setRequirementDraft] = useState({ title: "", description: "", priority: "P1", workflowStatus: "pending", images: [] });
   const [decisionDraft, setDecisionDraft] = useState("");
+  const [decisionImages, setDecisionImages] = useState([]);
+  const [editingDecisionImages, setEditingDecisionImages] = useState([]);
   const [editingDecision, setEditingDecision] = useState(null);
   const [editingDecisionCopy, setEditingDecisionCopy] = useState("");
   const [showIterationForm, setShowIterationForm] = useState(false);
@@ -3134,17 +3115,18 @@ function ProjectDetail({
           <section className="iteration-tab-panel iteration-requirements">
             <div className="iteration-panel-heading"><div><h2>需求列表 <b>{visibleTasks.length}</b></h2><p>管理本迭代的功能需求、优先级与交付进度。</p></div><button type="button" onClick={() => setShowRequirementForm((value) => !value)}><Plus size={18} /> 新建需求</button></div>
             {showRequirementForm && (
-              <form className="iteration-requirement-form" onSubmit={(event) => { event.preventDefault(); if (!requirementDraft.title.trim()) return; onAddTask(project.id, { ...requirementDraft, title: requirementDraft.title.trim(), description: requirementDraft.description.trim(), note: requirementDraft.description.trim(), iterationId: selectedIteration.id }); setRequirementDraft({ title: "", description: "", priority: "P1", workflowStatus: "pending" }); setShowRequirementForm(false); }}>
+              <form className="iteration-requirement-form" onSubmit={(event) => { event.preventDefault(); if (!requirementDraft.title.trim()) return; onAddTask(project.id, { ...requirementDraft, title: requirementDraft.title.trim(), description: requirementDraft.description.trim(), note: requirementDraft.description.trim(), iterationId: selectedIteration.id }); setRequirementDraft({ title: "", description: "", priority: "P1", workflowStatus: "pending", images: [] }); setShowRequirementForm(false); }}>
                 <label>需求名称<input autoFocus value={requirementDraft.title} onChange={(event) => setRequirementDraft((current) => ({ ...current, title: event.target.value }))} placeholder="例如：AI 自动打标签" /></label>
                 <label>需求说明<input value={requirementDraft.description} onChange={(event) => setRequirementDraft((current) => ({ ...current, description: event.target.value }))} placeholder="简要说明需求背景与验收目标" /></label>
                 <label>优先级<select value={requirementDraft.priority} onChange={(event) => setRequirementDraft((current) => ({ ...current, priority: event.target.value }))}><option>P1</option><option>P2</option><option>P3</option></select></label>
                 <button type="submit">创建需求</button>
+                <ImageAttachments images={requirementDraft.images} onChange={(update) => setRequirementDraft((current) => ({ ...current, images: update(current.images) }))} />
               </form>
             )}
             <div className="iteration-requirements-table">
               <div className="iteration-requirements-row header"><span>需求名称</span><span>需求说明</span><span>优先级</span><span>状态</span><span>操作</span></div>
               {visibleTasks.map((task) => {
-                return <div className="iteration-requirements-row" key={task.id}><span className="requirement-name"><label><input type="checkbox" checked={task.done} onChange={() => onToggleTask(project, task)} /><i><Check size={12} /></i></label><strong>{task.title}</strong></span><span className="requirement-description">{task.description || task.note || "—"}</span><span><em className={`requirement-priority ${task.priority || "P2"}`}>{task.priority || "P2"}</em></span><span><em className={`requirement-workflow ${task.done ? "done" : task.workflowStatus || "pending"}`}>{task.done ? "已完成" : task.workflowStatus === "testing" ? "测试中" : task.workflowStatus === "developing" ? "开发中" : "待开发"}</em></span><span><button type="button" onClick={() => { setEditingTask(task.id); setEditingCopy({ title: task.title, note: task.description || task.note || "" }); }}>编辑</button><button type="button" onClick={() => onDeleteTask(project.id, task.id)}>删除</button></span>{editingTask === task.id && <form className="project-task-copy-editor" onSubmit={(event) => { event.preventDefault(); onUpdateTask(project.id, task.id, { title: editingCopy.title.trim(), description: editingCopy.note.trim(), note: editingCopy.note.trim() }); setEditingTask(null); }}><label>需求名称<input value={editingCopy.title} onChange={(event) => setEditingCopy((current) => ({ ...current, title: event.target.value }))} /></label><label>需求说明<textarea value={editingCopy.note} onChange={(event) => setEditingCopy((current) => ({ ...current, note: event.target.value }))} /></label><div><button type="button" onClick={() => setEditingTask(null)}>取消</button><button type="submit">保存</button></div></form>}</div>;
+                return <div className="iteration-requirements-row" key={task.id}><span className="requirement-name"><label><input type="checkbox" checked={task.done} onChange={() => onToggleTask(project, task)} /><i><Check size={12} /></i></label><strong>{task.title}</strong></span><span className="requirement-description">{task.description || task.note || "—"}<ImageAttachments images={task.images} /></span><span><em className={`requirement-priority ${task.priority || "P2"}`}>{task.priority || "P2"}</em></span><span><em className={`requirement-workflow ${task.done ? "done" : task.workflowStatus || "pending"}`}>{task.done ? "已完成" : task.workflowStatus === "testing" ? "测试中" : task.workflowStatus === "developing" ? "开发中" : "待开发"}</em></span><span><button type="button" onClick={() => { setEditingTask(task.id); setEditingCopy({ title: task.title, note: task.description || task.note || "", images: task.images || [] }); }}>编辑</button><button type="button" onClick={() => onDeleteTask(project.id, task.id)}>删除</button></span>{editingTask === task.id && <form className="project-task-copy-editor" onSubmit={(event) => { event.preventDefault(); onUpdateTask(project.id, task.id, { title: editingCopy.title.trim(), description: editingCopy.note.trim(), note: editingCopy.note.trim(), images: editingCopy.images }); setEditingTask(null); }}><label>需求名称<input value={editingCopy.title} onChange={(event) => setEditingCopy((current) => ({ ...current, title: event.target.value }))} /></label><label>需求说明<textarea value={editingCopy.note} onChange={(event) => setEditingCopy((current) => ({ ...current, note: event.target.value }))} /></label><ImageAttachments images={editingCopy.images} onChange={(update) => setEditingCopy((current) => ({ ...current, images: update(current.images) }))} /><div><button type="button" onClick={() => setEditingTask(null)}>取消</button><button type="submit">保存</button></div></form>}</div>;
               })}
               {!visibleTasks.length && <p className="project-list-empty">这个迭代还没有需求。</p>}
             </div>
@@ -3153,23 +3135,24 @@ function ProjectDetail({
         {iterationTab === "decisions" && (
           <section className="iteration-tab-panel iteration-decisions">
             <div className="iteration-panel-heading"><div><h2>待确定项 <b>{selectedIteration.decisions?.length || 0}</b></h2><p>收集需要讨论、选择或等待结论的问题。</p></div></div>
-            <form onSubmit={(event) => { event.preventDefault(); if (!decisionDraft.trim()) return; onAddDecision(selectedIteration.id, { id: Date.now(), content: decisionDraft.trim(), status: "discussing", createdAt: Date.now() }); setDecisionDraft(""); }}><input value={decisionDraft} onChange={(event) => setDecisionDraft(event.target.value)} placeholder="例如：AI 回复是否读取历史聊天？" /><button type="submit"><Plus size={18} /> 添加待确定项</button></form>
+            <form onSubmit={(event) => { event.preventDefault(); if (!decisionDraft.trim()) return; onAddDecision(selectedIteration.id, { id: Date.now(), images: decisionImages, content: decisionDraft.trim(), status: "discussing", createdAt: Date.now() }); setDecisionDraft(""); setDecisionImages([]); }}><input value={decisionDraft} onChange={(event) => setDecisionDraft(event.target.value)} placeholder="例如：AI 回复是否读取历史聊天？" /><button type="submit"><Plus size={18} /> 添加待确定项</button><ImageAttachments images={decisionImages} onChange={setDecisionImages} /></form>
             <div className="iteration-decision-list">
               {(selectedIteration.decisions || []).map((decision) => (
                 <article key={decision.id}>
                   <span>?</span>
                   {editingDecision === decision.id ? (
-                    <form className="iteration-decision-editor" onSubmit={(event) => { event.preventDefault(); const content = editingDecisionCopy.trim(); if (!content) return; onUpdateDecision(selectedIteration.id, decision.id, { content }); setEditingDecision(null); setEditingDecisionCopy(""); }}>
+                    <form className="iteration-decision-editor" onSubmit={(event) => { event.preventDefault(); const content = editingDecisionCopy.trim(); if (!content) return; onUpdateDecision(selectedIteration.id, decision.id, { content, images: editingDecisionImages }); setEditingDecision(null); setEditingDecisionCopy(""); }}>
                       <input autoFocus value={editingDecisionCopy} onChange={(event) => setEditingDecisionCopy(event.target.value)} aria-label="编辑待确定项内容" />
                       <button type="button" onClick={() => { setEditingDecision(null); setEditingDecisionCopy(""); }}>取消</button>
                       <button type="submit">保存修改</button>
+                      <ImageAttachments images={editingDecisionImages} onChange={setEditingDecisionImages} />
                     </form>
                   ) : (
-                    <strong>{decision.content}</strong>
+                    <div className="iteration-decision-content"><strong>{decision.content}</strong><ImageAttachments images={decision.images} /></div>
                   )}
                   <em>讨论中</em>
                   <div className="iteration-decision-actions">
-                    <button type="button" aria-label={`编辑${decision.content}`} onClick={() => { setEditingDecision(decision.id); setEditingDecisionCopy(decision.content); }}><PencilSimple size={16} /> 编辑</button>
+                    <button type="button" aria-label={`编辑${decision.content}`} onClick={() => { setEditingDecision(decision.id); setEditingDecisionCopy(decision.content); setEditingDecisionImages(decision.images || []); }}><PencilSimple size={16} /> 编辑</button>
                     <button type="button" className="danger" aria-label={`删除${decision.content}`} onClick={() => onDeleteDecision(selectedIteration.id, decision.id)}><Trash size={16} /> 删除</button>
                   </div>
                 </article>
@@ -3375,18 +3358,6 @@ function Projects({
           }}
         />
       )}
-      <div className="project-hero">
-        <img
-          className="module-banner-art"
-          src="assets/banner-projects-v3.png"
-          alt=""
-        />
-        <div className="module-banner-copy">
-          <span>我的项目</span>
-          <h1>把想法变成行动，一步步搭建成果</h1>
-          <p>从今天的一小步开始，让计划慢慢长成现实。</p>
-        </div>
-      </div>
       <div className="project-toolbar">
         <div>
           {[
@@ -3763,37 +3734,6 @@ function ReviewWorkspace({
   );
   return (
     <section className="review-workspace">
-      <header className="review-hero">
-        <img
-          className="module-banner-art"
-          src="assets/banner-review-v3.png"
-          alt=""
-        />
-        <div className="review-hero-bg" aria-hidden="true">
-          <span className="rh-moon" />
-          <span className="rh-star s1">✦</span>
-          <span className="rh-star s2">✦</span>
-          <span className="rh-star s3">✦</span>
-        </div>
-        <div className="review-hero-inner">
-          <EditableBannerText
-            value={bannerCopy.title}
-            onSave={(v) => onBannerSave({ title: v })}
-            tag="h1"
-          />
-          <EditableBannerText
-            value={bannerCopy.sub}
-            onSave={(v) => onBannerSave({ sub: v })}
-            tag="p"
-            className="banner-sub"
-          />
-        </div>
-        <aside>
-          "复盘不是自责，
-          <br />
-          而是看见自己。"<small>— Muge</small>
-        </aside>
-      </header>
       <div className="review-body">
         <section className="review-today">
           <header className="review-today-head">
@@ -4247,6 +4187,7 @@ export function App() {
   // flips before the first save effect runs and that effect would overwrite the
   // saved day with the starter data before it is ever rendered.
   const [hydrated, setHydrated] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const widgetRequests = useRef([]);
   const longPressTimer = useRef(null);
   const pressPoint = useRef(null);
@@ -4302,13 +4243,20 @@ export function App() {
       if (window.desktopData) {
         const requests = widgetRequests.current.splice(0);
         window.desktopData.write(data).then(() => {
+          setSaveError("");
           requests.forEach((id) => window.desktopWidget?.actionResult(id));
         }).catch(() => {
+          setSaveError("保存失败，请检查磁盘空间后重试；请先保留当前页面。");
           requests.forEach((id) => window.desktopWidget?.actionResult(id, "保存失败，请检查磁盘空间后重试"));
         });
       }
-      else localStorage.setItem("my-day-data", JSON.stringify(data));
-    } catch {}
+      else {
+        localStorage.setItem("my-day-data", JSON.stringify(data));
+        setSaveError("");
+      }
+    } catch {
+      setSaveError("本地保存失败，图片可能超过浏览器存储空间。请移除部分图片后重试；请先保留当前页面。");
+    }
   }, [
     hydrated,
     taskMap,
@@ -4772,6 +4720,7 @@ export function App() {
     );
   return (
     <main className="app-shell">
+      {saveError && <div className="data-save-error" role="alert">{saveError}</div>}
       {celebration ? (
         <CompletionCelebration
           key={celebration.id}

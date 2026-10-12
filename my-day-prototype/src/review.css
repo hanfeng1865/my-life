@@ -16,7 +16,7 @@
 .review-hero aside{position:absolute;right:clamp(23px,5vw,68px);top:35px;padding:16px 20px;background:#fffdf8ee;border-radius:15px;box-shadow:0 8px 18px #0a1a3030;color:#526174;font-size:14px;font-weight:800;line-height:1.6}
 .review-hero aside small{display:block;text-align:right;color:#94a0b0}
 /* Main layout */
-.review-body{display:grid;grid-template-columns:1fr 380px;gap:22px;margin-top:24px;align-items:start}
+.review-body{display:grid;grid-template-columns:1fr 380px;gap:22px;margin-top:0;align-items:start}
 
 /* Today panel */
 .review-today{background:#fff;border:1px solid #edf2f7;border-radius:20px;padding:24px 26px;box-shadow:0 10px 26px #55769813}

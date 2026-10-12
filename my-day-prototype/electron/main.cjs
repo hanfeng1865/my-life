@@ -140,7 +140,10 @@ app.whenReady().then(() => {
   });
   createWindow();
   desktopWidget.showWidget();
-  app.on("activate", () => { if (!mainWindow || mainWindow.isDestroyed()) createWindow(); else mainWindow.show(); });
+  app.on("activate", (_event, hasVisibleWindows) => {
+    if (hasVisibleWindows || desktopWidget.isDismissing()) return;
+    if (!mainWindow || mainWindow.isDestroyed()) createWindow(); else mainWindow.show();
+  });
 });
 
 app.on("window-all-closed", () => { if (process.platform !== "darwin") app.quit(); });

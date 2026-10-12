@@ -16,3 +16,10 @@
 - 修正已有界面检查中 5 处依赖换行格式的断言，并将已改名的“本次迭代目标”断言更新为当前“迭代目标”。未改动对应产品功能。
 - 最终全量 80 项测试通过，生产构建与 Mac 打包通过。新版已更新到原 release/mac-arm64/我的人生.app 并启动。
 - 更新前备份真实数据和原应用；真实数据备份在 userData/backups，原应用备份在 /tmp/my-life-before-desktop-widget-2026-10-06.app。
+
+## 2026-10-10 · X 只收起浮窗
+
+- 原因：普通 macOS 窗口隐藏后可能把焦点交给主窗口；隐藏最后一个窗口时还可能延迟触发 activate，旧处理器会再次显示主窗口。
+- macOS 浮窗改为 non-activating panel；activate 不处理已有可见窗口，并忽略浮窗收起后 500ms 内的延迟激活事件。
+- 隔离 userData 实机点击 X：主窗口已隐藏时，收起后 mainVisible=false、mainFocused=false；主窗口在后台时，收起后 mainVisible=true、mainFocused=false。浮窗均 widgetVisible=false。
+- 85 项现有测试通过，生产构建和 Mac arm64 打包通过。

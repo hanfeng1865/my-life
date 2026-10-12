@@ -30,7 +30,7 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 - A project task that has been added to today must visibly read “已加入今天” and be disabled for that day, preventing duplicate additions.
 - “已加入今天” must stay on one line and never wrap mid-word.
 - Project task dates are chosen with a two-click calendar: first tap is the start, second tap is the end, and the range is auto-ordered. Native date inputs are not used for ranges.
-- Project list filters sit below the hero as their own bar, with clear space from the banner and from the cards.
+- The project overview starts with the filter bar and new-project action; do not show the illustration/banner above it. Keep clear space between the filter bar and project cards.
 - A day task opens its editor on a normal click. Dragging is reserved for a deliberate long press, then movement onto another visible date card.
 - The project overview always exposes a prominent “新建项目” entry and lets each project switch directly among 进行中、已暂停、已完成.
 - Inspiration cards use an explicit trash icon and confirmed permanent deletion; the three-dot overflow affordance is not used.
@@ -42,8 +42,14 @@ Build app UI in `src/`. Keep `.openai/hosting.json`, `worker/index.js`, `scripts
 
 - 桌面待办采用 Electron 独立无边框小窗口，显示设备实际今天的任务，保留柔和蓝色；支持拖动、可选置顶、添加、勾选和折叠已完成事项，与主应用共用数据和项目完成状态。
 
+- 桌面待办左上角 X 只隐藏小窗口，不能激活、显示或把主客户端带到屏幕最前面；打开主窗口使用明确的“打开我的一天”入口。
+
 - 项目列表卡片不显示下一步、进度条/百分比/自动计算和待办预览；操作为“查看迭代”“项目随记”和小垃圾桶删除图标（不显示“删除项目”文字，保留删除确认）。“项目随记”打开该项目的独立随记页，随记从迭代列表页移出。
 
 - 项目状态选择器使用应用内圆角浮层：浅蓝选中背景、状态色圆点和勾选标记；不用原生 select 下拉菜单，支持点击外部、Esc 关闭及键盘选择。
 
 - 每个项目迭代有独立“BUG列表”标签，记录 BUG 描述和状态（待处理、已完成、无需处理）；支持新增、编辑、确认删除、直接切换状态和本地保存，数量来自该迭代实际 BUG 数据。
+
+- 需求、BUG、待确定项在新建和编辑时均支持粘贴或选择多张图片；保存后显示缩略图，点击可放大查看并复制图片，图片随条目本地保存。
+
+- “我的目标”“我的灵感”“每日复盘”不显示顶部海报（包括图片、宣传文案和装饰）；分别直接从目标工具栏、灵感输入区、复盘内容区开始，不留海报占位空白。此决定取代这三页此前的统一模块横幅要求。

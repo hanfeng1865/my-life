@@ -95,10 +95,15 @@ export function deleteIterationDecision(projects, projectId, iterationId, decisi
 
 export const BUG_STATUSES = [["pending", "待处理"], ["done", "已完成"], ["ignored", "无需处理"]];
 
+function normalizeAttachments(entry) {
+  if (!entry || !("images" in entry)) return entry;
+  return { ...entry, images: Array.isArray(entry.images) ? entry.images.filter((image) => typeof image === "string" && /^data:image\/(png|jpeg|webp|gif|bmp|avif);base64,/.test(image)) : [] };
+}
+
 function normalizeIterationBug(bug) {
   if (!bug || typeof bug.description !== "string" || !bug.description.trim()) return null;
   return {
-    ...bug,
+    ...normalizeAttachments(bug),
     description: bug.description.trim(),
     status: BUG_STATUSES.some(([value]) => value === bug.status) ? bug.status : "pending",
   };
@@ -308,11 +313,12 @@ export function normalizeData(value) {
     inspirations: Array.isArray(value.inspirations) ? value.inspirations : [],
     projects: Array.isArray(value.projects) ? value.projects.map((project) => ({
       ...project,
+      tasks: Array.isArray(project?.tasks) ? project.tasks.map(normalizeAttachments) : [],
       iterations: Array.isArray(project?.iterations) ? project.iterations.filter(Boolean).map((iteration) => ({
         ...iteration,
         goals: Array.isArray(iteration.goals) ? iteration.goals.filter((goal) => typeof goal === "string" && goal.trim()) : [],
         bugs: Array.isArray(iteration.bugs) ? iteration.bugs.map(normalizeIterationBug).filter(Boolean) : [],
-        decisions: Array.isArray(iteration.decisions) ? iteration.decisions.filter((decision) => decision && typeof decision.content === "string") : [],
+        decisions: Array.isArray(iteration.decisions) ? iteration.decisions.filter((decision) => decision && typeof decision.content === "string").map(normalizeAttachments) : [],
         status: ["planned", "active", "done"].includes(iteration.status) ? iteration.status : "planned",
       })) : [],
       notes: Array.isArray(project?.notes) ? project.notes.filter((note) => note && typeof note.content === "string").map((note) => ({
